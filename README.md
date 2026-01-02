@@ -40,6 +40,18 @@ Simple aggregation query to count user interactions.
 
 ---
 
+## Visual Representations
+
+The `Graph/` folder contains visualizations of the key mathematical functions:
+
+- **[DecayFunction.png](Graph/DecayFunction.png)** - Shows exponential decay curves for different half-life values
+- **[ExponentSaturationFunction.png](Graph/ExponentSaturationFunction.png)** - Illustrates the saturation effect for personalization
+- **[HyperbolicTanget(Velocity-Boost).png](<Graph/HyperbolicTanget(Velocity-Boost).png>)** - Displays the velocity boost calculation
+
+These graphs help visualize how the mathematical functions shape the recommendation behavior.
+
+---
+
 ## Mathematical Formulas Used
 
 ### 1. **Exponential Decay Function**
@@ -82,6 +94,20 @@ Where:
 
 - $n$ = count of interactions with that category/genre/tag
 - Square root normalization reduces impact of categories with many but low-quality interactions
+
+**Why Square Root Instead of Simple Count?**
+
+Using $\sqrt{n}$ instead of $n$ is a variance stabilization technique that prevents categories with many interactions from dominating the recommendations, even if those interactions are mediocre. This addresses the **law of large numbers** problem:
+
+- Without normalization: A category with 100 interactions averaging score 1.0 would get total score = 100
+- With $\sqrt{n}$ normalization: Same category gets $100/\sqrt{100} = 100/10 = 10$
+- A category with 25 interactions averaging score 2.0 gets $50/\sqrt{25} = 50/5 = 10$
+
+This creates **balance between quality and quantity**:
+
+- High-quality niche categories aren't overshadowed by popular but mediocre ones
+- Reduces variance in score estimates (statistical variance ∝ 1/n, so std dev ∝ $1/\sqrt{n}$)
+- Prevents "echo chamber" effect where the algorithm only recommends from heavily-interacted categories
 
 ### 4. **Softmax (Exponential Normalization)**
 
@@ -238,6 +264,16 @@ Models natural processes where quantity decreases at a rate proportional to its 
 - Content becoming stale over time
 - Older interactions having less predictive power
 
+**Why Use Exponentials?** The exponential function $e^x$ has unique mathematical properties that make it ideal for modeling real-world phenomena:
+
+1. **Continuous Decay Rate**: Unlike linear decay, exponential decay maintains a constant _percentage_ rate of change, which mirrors how humans naturally forget or lose interest over time
+2. **Half-Life Concept**: Easy to reason about - "after 30 days, content is worth half as much"
+3. **Differentiable**: Smooth curves allow for optimization and gradient-based tuning
+4. **Multiplicative**: Multiple decay factors can be combined cleanly: $e^{-a} \cdot e^{-b} = e^{-(a+b)}$
+5. **Biological Realism**: Human memory decay, attention span, and interest follow exponential patterns (Ebbinghaus forgetting curve)
+
+![Decay Function](Graph/DecayFunction.png)
+
 ### Softmax Function
 
 Converts arbitrary real values to a probability distribution. Properties:
@@ -246,6 +282,16 @@ Converts arbitrary real values to a probability distribution. Properties:
 - Maintains relative ordering
 - Differentiable (useful for optimization)
 - Temperature parameter controls concentration
+
+**Why Use Exponentials in Softmax?** The formula $w_i = \frac{e^{s_i/T}}{\sum_j e^{s_j/T}}$ uses exponentials for several critical reasons:
+
+1. **Always Positive**: $e^x > 0$ for all $x$, ensuring all weights are positive (can't have negative probabilities)
+2. **Amplifies Differences**: Exponentials magnify differences between good and mediocre items, making top preferences stand out
+3. **Smooth and Differentiable**: Enables gradient-based optimization if you later want to tune parameters with machine learning
+4. **Temperature Control**:
+   - Low T → Sharp distribution (winner-takes-all, exploitation)
+   - High T → Flat distribution (exploration, diversity)
+5. **Statistical Foundation**: Derived from maximum entropy principle and logistic regression in statistics
 
 ### Hyperbolic Tangent (tanh)
 
@@ -256,6 +302,16 @@ S-shaped curve that:
 - Symmetric around origin
 - Models saturation effects
 
+**Why Use tanh for Velocity?** The hyperbolic tangent is perfect for measuring "trending" content:
+
+1. **Bounded Output**: Guarantees boost stays between -1 (dying content) and +1 (viral content)
+2. **Symmetric**: Treats positive and negative velocity changes fairly
+3. **Smooth Saturation**: Prevents extreme values from dominating - even massively viral content has bounded impact
+4. **Zero-Centered**: Content with stable engagement (recent ≈ baseline) gets velocity ≈ 0 (no boost or penalty)
+5. **Sigmoid Shape**: Small changes near zero have linear effect, but large changes saturate gracefully
+
+![Velocity Boost](<Graph/HyperbolicTanget(Velocity-Boost).png>)
+
 ### Exponential Saturation
 
 Function $1 - e^{-x}$ that:
@@ -265,7 +321,55 @@ Function $1 - e^{-x}$ that:
 - Models diminishing returns
 - Prevents over-fitting to strong preferences
 
+**Why Use Exponential Saturation?** This prevents the "filter bubble" problem:
+
+1. **Diminishing Returns**: First matching preference has large impact (e.g., 63% at x=1), but 10th matching preference adds little
+2. **Prevents Over-Personalization**: Caps how much personalization can boost a score, ensuring variety
+3. **Smooth Growth**: Unlike hard caps, provides smooth mathematical behavior
+4. **Natural Modeling**: Mirrors real user behavior - first match matters a lot, additional matches matter less
+5. **Prevents Score Explosion**: Without saturation, users with many preferences could push scores to infinity
+
+**Formula in action**: If a user likes 3 categories with weights [0.4, 0.3, 0.2] (sum = 0.9):
+
+- Without saturation: multiplier = 1 + 0.5 × 0.9 = 1.45
+- With saturation: multiplier = 1 + 0.5 × (1 - e^(-0.9)) = 1 + 0.5 × 0.593 = 1.297
+
+The saturation ensures that even users with extreme preference profiles get reasonable, non-explosive scores.
+
+![Exponential Saturation](Graph/ExponentSaturationFunction.png)
+
 ---
+
+## Why Exponentials Everywhere?
+
+You may notice exponential functions ($e^x$, $e^{-x}$) appear throughout this recommendation system. This is not coincidental - exponentials have unique mathematical properties that make them the "natural" choice:
+
+### Mathematical Properties
+
+1. **Scale Invariance**: $e^{a+b} = e^a \cdot e^b$ - makes combining multiple factors clean
+2. **Natural Derivative**: $(e^x)' = e^x$ - the only function that is its own derivative
+3. **Always Positive**: Essential for probabilities and weights
+4. **Smooth and Continuous**: No sharp corners or discontinuities
+
+### Real-World Modeling
+
+- **Time Decay**: How interest/memory fades (Ebbinghaus curve)
+- **Compound Growth**: How virality/popularity accelerates
+- **Probability Theory**: Maximum entropy distributions, logistic regression
+- **Information Theory**: Related to entropy and information content
+
+### Practical Benefits
+
+- **Numerically Stable**: PostgreSQL's `EXP()` function is highly optimized
+- **Tunable**: Parameters like half-life and temperature are intuitive
+- **Composable**: Multiple exponential factors multiply cleanly
+- **Interpretable**: Half-lives and decay rates have clear business meaning
+
+This is why recommendation systems, search engines, and ML models heavily use exponential functions - they're mathematically elegant and practically effective.
+
+---
+
+## Why Exponentials Everywhere?
 
 ## Usage Example
 
