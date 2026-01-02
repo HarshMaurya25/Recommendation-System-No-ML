@@ -76,7 +76,7 @@ Where:
 
 Normalized by square root of sample size to reduce variance.
 
-$$\text{raw\_score} = \frac{\sum \text{scores}}{\sqrt{n}}$$
+$$\text{raw score} = \frac{\sum \text{scores}}{\sqrt{n}}$$
 
 Where:
 
@@ -108,7 +108,7 @@ $$w_i = \frac{e^{\max(s_i, -1.5) / 1.5}}{\sum_j e^{\max(s_j, -1.5) / 1.5}}$$
 
 Weighted engagement metric based on positive vs total interactions.
 
-$$\text{mean\_score} = w_{\text{mean}} \cdot \frac{n_{\text{like}} + n_{\text{comment}}}{n_{\text{like}} + n_{\text{dislike}} + n_{\text{comment}}}$$
+$$\text{mean score} = w_{\text{mean}} \cdot \frac{n_{\text{like}} + n_{\text{comment}}}{n_{\text{like}} + n_{\text{dislike}} + n_{\text{comment}}}$$
 
 Where:
 
@@ -131,7 +131,7 @@ Where:
 
 Combines base quality with personalized affinity using saturation.
 
-$$\text{weighted\_score} = \min\left((\text{mean\_score} + 1) \cdot \left(1 + \sum f_k \cdot (1 - e^{-w_k})\right), \text{max\_score}\right)$$
+$$\text{weighted score} = \min\left((\text{mean score} + 1) \cdot \left(1 + \sum f_k \cdot (1 - e^{-w_k})\right), \text{max score}\right)$$
 
 Where:
 
@@ -143,7 +143,7 @@ Where:
 
 Measures rate of change in engagement, bounded between -1 and 1.
 
-$$\text{velocity\_boost} = \tanh\left(\frac{s_{\text{recent}} - \frac{s_{\text{baseline}}}{4}}{|s_{\text{baseline}}| + 1}\right)$$
+$$\text{velocity boost} = \tanh\left(\frac{s_{\text{recent}} - \frac{s_{\text{baseline}}}{4}}{|s_{\text{baseline}}| + 1}\right)$$
 
 Where:
 
@@ -157,7 +157,7 @@ Where:
 
 Combines quality, temporal decay, and velocity.
 
-$$\text{final\_score} = \text{weighted\_score} \cdot e^{-\ln(2) \cdot \frac{d_{\text{age}}}{30}} \cdot (1 + s_v \cdot \text{velocity\_boost})$$
+$$\text{final score} = \text{weighted score} \cdot e^{-\ln(2) \cdot \frac{d_{\text{age}}}{30}} \cdot (1 + s_v \cdot \text{velocity boost})$$
 
 Where:
 
@@ -299,20 +299,10 @@ Results include:
 
 ---
 
-## Future Enhancements
-
-- Collaborative filtering integration
-- A/B testing framework for parameter tuning
-- Real-time update mechanisms
-- Multi-armed bandit for exploration vs exploitation
-- Neural embedding for content similarity
-
----
-
 ## License
 
 This project is provided as-is for educational and commercial use.
 
 ## Author
 
-Created as part of SQL mini-projects collection.
+Created as part of Recommendation System for Social Media based platform
