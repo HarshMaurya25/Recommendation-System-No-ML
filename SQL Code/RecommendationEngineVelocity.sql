@@ -19,9 +19,6 @@ WITH constants AS (
         0.5  ::numeric AS velocity_strength
 ),
 
-/* ---------------------------------------------
-   USER INTERACTION ORDERING (RECENCY + POSITION)
----------------------------------------------- */
 ordered_interactions AS (
     SELECT
         ui.user_id,
@@ -53,9 +50,6 @@ interaction_scores AS (
     CROSS JOIN constants c
 ),
 
-/* ---------------------------------------------
-   AFFINITY: CATEGORY / GENRE / TAG
----------------------------------------------- */
 category_stats AS (
     SELECT
         cc.category,
@@ -119,9 +113,6 @@ tag_affinity AS (
     CROSS JOIN constants c
 ),
 
-/* ---------------------------------------------
-   BASE CONTENT QUALITY (NO PERSONALIZATION)
----------------------------------------------- */
 raw_content_scores AS (
     SELECT
         c.content_id,
@@ -142,9 +133,6 @@ raw_content_scores AS (
     )
 ),
 
-/* ---------------------------------------------
-   VELOCITY (RATE OF CHANGE, NOT TOTALS)
----------------------------------------------- */
 interaction_velocity AS (
     SELECT
         ui.content_content_id,
@@ -191,9 +179,6 @@ velocity_multiplier AS (
     FROM interaction_velocity
 ),
 
-/* ---------------------------------------------
-   PERSONALIZATION + AFFINITY SATURATION
----------------------------------------------- */
 preference_treatment_scores AS (
     SELECT
         rcs.content_id,
@@ -234,9 +219,6 @@ preference_treatment_scores AS (
         c.max_weighted_score
 ),
 
-/* ---------------------------------------------
-   FINAL SCORE = QUALITY × DECAY × VELOCITY
----------------------------------------------- */
 final_scores AS (
     SELECT
         pts.*,
